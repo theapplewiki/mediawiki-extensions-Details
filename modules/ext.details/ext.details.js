@@ -130,7 +130,7 @@ function handleHashChange() {
 		return;
 	}
 
-	const $parents = $( fragment ).parents( 'details:not([open])' );
+	const $parents = /** @type {JQuery<HTMLDetailsElement>} */ ( $( fragment ).parents( 'details:not([open])' ) );
 	if ( !$parents.length ) {
 		// The fragment is not in a collapsed element
 		return;
@@ -138,8 +138,7 @@ function handleHashChange() {
 
 	// Expand collapsed parents
 	$parents.each( ( _, el ) => {
-		const $details = /** @type {JQuery<HTMLDetailsElement>} */ ( $( el ) );
-		$details[ 0 ].open = true;
+		el.open = true;
 	} );
 
 	// Scroll to the fragment
