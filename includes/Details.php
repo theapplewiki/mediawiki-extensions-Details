@@ -27,6 +27,9 @@ class Details {
 			$part = null;
 		}
 
+		$is_head = in_array( $part, Details::HEAD_PARTS );
+		$is_foot = in_array( $part, Details::FOOT_PARTS );
+
 		// Handle an invalid self-closing tag
 		if ( $input === null && $part === null ) {
 			return '';
@@ -39,7 +42,7 @@ class Details {
 
 		$result = '';
 
-		if ( !in_array( $part, Details::FOOT_PARTS ) ) {
+		if ( !$is_foot ) {
 			// Add our attributes
 			if ( self::$compatibilityMode === true ) {
 				$args = $sanitizer::mergeAttributes( [
@@ -48,7 +51,14 @@ class Details {
 			}
 
 			// Sanitize to attributes that would be valid on a <div>
-			$attrs = $sanitizer::safeEncodeTagAttributes( $sanitizer::validateTagAttributes( $args, 'div' ) );
+			$unsafe_attrs = $sanitizer::validateTagAttributes( $args, 'div' );
+
+			// Insert attributes valid on <details> but not <div>
+			if ( isset( $args['name'] ) ) {
+				$unsafe_attrs['name'] = $args['name'];
+			}
+
+			$attrs = $sanitizer::safeEncodeTagAttributes( $unsafe_attrs );
 
 			// Add open attribute manually if set, because the sanitizer will have stripped it out.
 			// We also support some falsy values, to help templates that use the open attribute.
@@ -59,11 +69,11 @@ class Details {
 			$result .= '<details ' . $attrs . '>';
 		}
 
-		if ( !in_array( $part, Details::HEAD_PARTS ) && !in_array( $part, Details::FOOT_PARTS ) ) {
+		if ( !$is_head && !$is_foot ) {
 			$result .= trim( $parser->recursiveTagParse( $input, $frame ) );
 		}
 
-		if ( !in_array( $part, Details::HEAD_PARTS ) ) {
+		if ( !$is_head ) {
 			$result .= '</details>';
 		}
 
